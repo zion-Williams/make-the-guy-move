@@ -1,20 +1,17 @@
-player = {
-    x: 20,
-    y: 20,
-    xDir: 1,
-    yDir: 0
-}
+player = {};
 
 game = {
     cellSize: 20,
     fillSize: 18,
     width: 40,
-    height: 30
+    height: 30,
+    score: 0
 }
 
 fruit = {
-     x: 40,
-     y: 40
+    color:'red',
+     x: 10,
+     y: 10
 }
 
 cnv.width = game.width * game.cellSize;
@@ -25,7 +22,22 @@ tail = [];
 snakeLength = 3;
 
 function draw() {
-    tail.push({x: player.x, y: player.y});
+    let direction = player.directionQueue.shift();
+    if (direction == 'ArrowDown' && player.yDir != -1) {
+        player.yDir = 1;
+        player.xDir = 0;
+    } else if (direction == 'ArrowUp'  && player.yDir != 1) {
+        player.xDir = 0;
+        player.yDir = -1;
+    } else if (direction == "ArrowLeft" && player.xDir != 1) {
+        player.xDir = -1;
+        player.yDir = 0;
+    } else if (direction == "ArrowRight" && player.xDir != -1) {
+        player.xDir = 1;
+        player.yDir = 0;
+    }
+
+    tail.push({x: player.x, y: player.y, color: 'green'});
     tail = tail.slice(-snakeLength);
 
     player.x = player.x + player.xDir;
@@ -60,6 +72,8 @@ function makeFruit() {
     snakeLength += 3;
     fruit.x = getRandom(game.width);
     fruit.y = getRandom(game.height);
+    game.score++;
+    drawScore();
 }
 
 function getRandom(max) {
@@ -68,29 +82,35 @@ function getRandom(max) {
 
 function gameOver() {
     clearInterval(interval);
-    alert('Game Over!')
 }
 
 function keyHandler(e) {
-    if (e.key == 'ArrowDown') {
-        player.yDir = 1;
-        player.xDir = 0;
-    } else if (e.key == 'ArrowUp') {
-        player.xDir = 0;
-        player.yDir = -1;
-    } else if (e.key == "ArrowLeft") {
-        player.xDir = -1
-        player.yDir = 0;
-    } else if (e.key == "ArrowRight") {
-        player.xDir = 1
-        player.yDir = 0;
-    }
+    player.directionQueue.push(e.key)
 }
 
 function drawObject(obj) {
+    ctx.fillStyle = obj.color;
     ctx.fillRect(obj.x * game.cellSize, obj.y * game.cellSize, game.fillSize, game.fillSize)
 }
 
-makeFruit();
-interval = setInterval(draw, 65);
 onkeydown = keyHandler;
+
+function drawScore() {
+    score.innerText = "Score: " + game.score;
+}
+
+function gameStart() {
+    interval = setInterval(draw, 100);
+    tail = [];
+    snakeLength = 3;
+    game.score = 0;
+    player = {
+        color:"green",
+        x: 20,
+        y: 20,
+        xDir: 1,
+        yDir: 0,
+        directionQueue: []
+    }
+    drawScore();
+}
